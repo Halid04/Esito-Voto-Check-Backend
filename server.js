@@ -50,7 +50,7 @@ app.post("/process", async (req, res) => {
 const PORT = process.env.PORT || 3000;
 
 app.get("/", (req, res) => {
-  res.send("Render Puppeteer server is up and running!");
+  res.send("Render Puppeteer server is up and running!!");
 });
 
 app.listen(PORT, () => {
@@ -59,11 +59,11 @@ app.listen(PORT, () => {
 
 async function fetchData(codicePersonale, password) {
   const oldProxyUrl =
-    "http://halidyoutub3_gmail_com-country-it-region-lombardia-city-brescia-isp-telecomitaliaspa:zbjtgaaoly@gate.nodemaven.com:8080";
+    "http://halidyoutub3_gmail_com-country-it:zbjtgaaoly@gate.nodemaven.com:8080";
   const newProxyUrl = await proxyChain.anonymizeProxy(oldProxyUrl);
 
   // Prints something like "http://127.0.0.1:45678"
-  // console.log(newProxyUrl);
+  console.log(newProxyUrl);
 
   console.log("Entrato in fetchData");
   const url = "https://web.spaggiari.eu/cvv/app/default/genitori_voti.php";
