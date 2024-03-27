@@ -1,5 +1,6 @@
 const puppeteer = require("puppeteer-extra");
 const StealthPlugin = require("puppeteer-extra-plugin-stealth");
+const proxyChain = require("proxy-chain");
 const express = require("express");
 const bodyParser = require("body-parser");
 const app = express();
@@ -25,7 +26,7 @@ app.use((req, res, next) => {
   next();
 });
 
-// app.use(express.static(path.join(__dirname, "public")));
+app.use(express.static(path.join(__dirname, "public")));
 
 app.use(bodyParser.json());
 
@@ -49,7 +50,7 @@ app.post("/process", async (req, res) => {
 const PORT = process.env.PORT || 3000;
 
 app.get("/", (req, res) => {
-  res.send("Render Puppeteer server is up and running!!");
+  res.send("Render Puppeteer server is up and running!");
 });
 
 app.listen(PORT, () => {
@@ -57,6 +58,13 @@ app.listen(PORT, () => {
 });
 
 async function fetchData(codicePersonale, password) {
+  const oldProxyUrl =
+    "http://halidyoutub3_gmail_com-country-it-region-lombardia-city-brescia-isp-telecomitaliaspa:zbjtgaaoly@gate.nodemaven.com:8080";
+  const newProxyUrl = await proxyChain.anonymizeProxy(oldProxyUrl);
+
+  // Prints something like "http://127.0.0.1:45678"
+  // console.log(newProxyUrl);
+
   console.log("Entrato in fetchData");
   const url = "https://web.spaggiari.eu/cvv/app/default/genitori_voti.php";
   const browser = await puppeteer.launch(
@@ -67,7 +75,7 @@ async function fetchData(codicePersonale, password) {
         "--no-sandbox",
         "--single-process",
         "--no-zygote",
-        "--proxy-server=http://86.48.0.127:3128",
+        `--proxy-server=${newProxyUrl}`,
       ],
       executablePath:
         process.env.NODE_ENV === "production"
@@ -88,6 +96,9 @@ async function fetchData(codicePersonale, password) {
     isMobile: false,
   });
 
+  // await newpage.setUserAgent(
+  //   "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36"
+  // );
   await page.setJavaScriptEnabled(true);
   await page.setDefaultNavigationTimeout(0);
 
@@ -107,12 +118,7 @@ async function fetchData(codicePersonale, password) {
 
   await page.goto(url, { waitUntil: "domcontentloaded" });
   console.log("pagina caricata");
-  await page.waitForTimeout(1000);
-
-  await page.screenshot({
-    path: "./screenshot9.jpg",
-  });
-  console.log("screenshot fatto");
+  await page.waitForTimeout(2000);
 
   await page.waitForSelector("#login");
   await page.type("#login", await codicePersonale);
@@ -126,6 +132,11 @@ async function fetchData(codicePersonale, password) {
     page.waitForNavigation({ waitUntil: "domcontentloaded" }),
     page.click(".accedi"),
   ]);
+
+  // await page.screenshot({
+  //   path: "./screenshot2.jpg",
+  // });
+  // console.log("screenshot fatto");
 
   const data = await page.evaluate(() => {
     const containerClass = document.querySelectorAll(
@@ -165,6 +176,9 @@ async function fetchData(codicePersonale, password) {
   });
 
   await browser.close();
+
+  // Clean up
+  await proxyChain.closeAnonymizedProxy(newProxyUrl, true);
 
   return data;
 }
